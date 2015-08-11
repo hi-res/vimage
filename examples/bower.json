@@ -13,7 +13,6 @@
     "tests"
   ],
   "dependencies": {
-    "magipack": "~1.0.0",
     "howler.js": "~1.1.26",
     "gsap": "~1.17.0",
     "dat-gui": "~0.5.1",

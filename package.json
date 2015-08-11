@@ -7,14 +7,15 @@
     "example": "examples"
   },
   "dependencies": {
-     "happens": "^0.5.0"
+    "happens": "^0.5.0"
   },
   "devDependencies": {
-    "coffee-script": "^1.9.3",
     "browser-sync": "^2.8.2",
+    "coffee-script": "^1.9.3",
     "ecstatic": "^0.8.0",
     "gulp": "^3.9.0",
     "gulp-coffeeify": "^0.1.8",
+    "gulp-concat": "^2.6.0",
     "gulp-if": "^1.2.5",
     "gulp-rename": "^1.2.2",
     "gulp-streamify": "^1.0.0",

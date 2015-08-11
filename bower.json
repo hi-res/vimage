@@ -1,0 +1,19 @@
+{
+  "name": "vimage",
+  "version": "0.0.0",
+  "homepage": "https://github.com/hi-res/vimage",
+  "authors": [
+    "David Paul Rosser"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "magipack": "~1.0.0"
+  }
+}
