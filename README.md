@@ -9,9 +9,9 @@ This project was created as a workaround to provide inline video playback on mob
 
 Demos:
 
-* [Standard image sequence](http://google.com)
-* [Video playback with audio](http://google.com)
-* [VR (google cardboard)](http://google.com)
+* [Standard image sequence](http://hi-res.github.io/vimage/examples/sequence.html)
+* [Video playback with audio](http://hi-res.github.io/vimage/examples/video.html)
+* [VR (google cardboard)](http://hi-res.github.io/vimage/examples/vr.html)
 
 ## Features
 
