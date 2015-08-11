@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>BMW prototype</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<style type="text/css">
+		body {
+			overflow: hidden;
+			margin: 0;
+		}
+		#sequence{
+			display: none;
+		}
+
+		#play{
+			top: 50%;
+			left: 50%;
+			position: absolute;
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+
+<div id="sequence"></div>
+
+<button id="play">Play</button>
+
+<script type="text/javascript" src="bower_components/magipack/src/Magipack.js"></script>
+<script type="text/javascript" src="bower_components/gsap/src/minified/easing/EasePack.min.js"></script>
+<script type="text/javascript" src="bower_components/gsap/src/minified/TweenLite.min.js"></script>
+<script type="text/javascript" src="bower_components/dat-gui/build/dat.gui.min.js"></script>
+<script type="text/javascript" src="bower_components/es6-promise/promise.min.js"></script>
+<script type="text/javascript" src="bower_components/fulltilt/dist/fulltilt.min.js"></script>
+<script type="text/javascript" src="bower_components/threejs/build/three.min.js"></script>
+<script type="text/javascript" src="bower_components/threejs/examples/js/controls/OrbitControls.js"></script>
+<script type="text/javascript" src="bower_components/threejs/examples/js/effects/StereoEffect.js"></script>
+<script type="text/javascript" src="bower_components/howler.js/howler.min.js"></script>
+<script type="text/javascript" src="bower_components/mobile-detect/mobile-detect.min.js"></script>
+
+<script type="text/javascript" src="../build/vimage.js"></script>
+<script type="text/javascript">
+
+	var hasWebP = false;
+	var ext 	= 'jpg';
+
+	(function() {
+		var img = new Image();
+		img.onload = function() {
+			hasWebP = !!(img.height > 0 && img.width > 0);
+
+			ext = 'webp';
+
+			init();
+		};
+		img.onerror = function() {
+			hasWebP = false;
+
+			init();
+		};
+		img.src = 'test.webp';
+	})();
+
+	function init(){
+
+		var vimage = new Vimage({element: 'sequence'});
+
+		// Requires tweenlite
+		var playbackMode = new vimage.modes.PlaybackMode;
+
+		playbackMode.loop = true;
+
+		var gui = new dat.GUI();
+		gui.open();
+
+		gui.add(vimage.options, 'buffer_percent').listen();
+		gui.add(vimage.loader, 'packs_count').listen();
+		gui.add(vimage.loader, 'packs_total').listen();
+		gui.add(playbackMode, 'duration').listen();
+		gui.add(playbackMode, 'percent', 0, 1).listen();
+		gui.add(playbackMode, 'status').listen();
+
+		// Add sound with howler
+
+		var sound = new Howl({
+			urls: ['videos/redbull/audio.aac',
+				   'videos/redbull/audio.ogg',
+				   'videos/redbull/audio.mp3']
+		});
+
+		playbackMode.on('start', function(){
+			console.debug('start');
+			sound.stop();
+			sound.play();
+
+			play.style.display = 'none';
+		});
+
+		playbackMode.on('pause', function(){
+			console.debug('pause');
+			sound.pause();
+		});
+
+		playbackMode.on('resume', function(){
+			// sound.play();
+			console.debug('resume');
+		});
+
+		playbackMode.on('stop', function(){
+			console.debug('stop');
+			sound.stop();
+		});
+
+		vimage.set_mode( playbackMode );
+
+		var play = document.getElementById('play')
+
+		play.addEventListener('click', function(){
+			vimage.load('videos/redbull/hd/'+ ext +'/vimage.json');
+		});
+
+		playbackMode.on('start', function(){
+			play.style.display = 'none';
+		});
+
+		// Device
+		var md = new MobileDetect(window.navigator.userAgent);
+		var isMobile = md.mobile() != null;
+
+		if(isMobile){
+			dat.GUI.toggleHide();
+		}
+		
+		// Webgl setup
+
+		var renderer = new THREE.WebGLRenderer();
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		document.body.appendChild( renderer.domElement );
+
+		var stereo = new THREE.StereoEffect(renderer);
+		stereo.eyeSeparation = 2;
+		stereo.setSize( window.innerWidth, window.innerHeight );
+
+		var WIDTH  = window.innerWidth;
+		var HEIGHT = window.innerHeight;
+
+		/* 
+			Scene
+		*/
+		var scene = new THREE.Scene();
+
+		/* 
+			Cameras
+		*/
+		var cameras  = {
+			user: new THREE.PerspectiveCamera( 90, WIDTH / HEIGHT, 0.1, 100000 ),
+			dev: new THREE.PerspectiveCamera( 65, WIDTH / HEIGHT, 0.1, 100000 )
+		}
+
+		function zoom( camera, zoom ){
+			camera.position.set( 1 * zoom, 0.75 * zoom, 0);
+			camera.lookAt( new THREE.Vector3() );
+		}
+				
+		zoom( cameras.dev, 300 );
+
+		/*
+			Helpers
+		*/
+		// scene.add( new THREE.GridHelper( 50, 10 ) );
+		// scene.add( new THREE.AxisHelper( 10 ) );
+		// scene.add( new THREE.CameraHelper( cameras.user ) );
+
+		/* 
+			Video texture
+		*/
+
+		var videoImage = document.createElement( 'img' );
+		videoImage.width = 1280;
+		videoImage.height = 640;
+
+		var videoTexture = new THREE.Texture( videoImage );
+
+		videoTexture.minFilter = THREE.NearestFilter;
+
+		/* 
+			Pano sphere
+		*/
+
+		var material = new THREE.MeshBasicMaterial({
+			map: videoTexture,
+			side: THREE.DoubleSide,
+			overdraw: true
+		})
+
+		var mesh = new THREE.Mesh(new THREE.SphereGeometry(500, 60, 40), material);
+		
+		scene.add( mesh );
+
+		var camera = ( isMobile ) ? cameras.user : cameras.dev;
+
+		var controls = new THREE.OrbitControls( camera, renderer.domElement );
+	 
+		// Create a new FULLTILT Promise for e.g. *compass*-based deviceorientation data
+		var promise = new FULLTILT.getDeviceOrientation({ 'type': 'world' });
+
+		// FULLTILT.DeviceOrientation instance placeholder
+		var deviceOrientation;
+
+		promise
+			.then(function(controller) {
+				// Store the returned FULLTILT.DeviceOrientation object
+				deviceOrientation = controller;
+			})
+			.catch(function(message) {
+				console.error(message);
+			});
+
+		function update(){
+
+			requestAnimationFrame( update );
+
+			controls.update();
+
+			var image = vimage.player.get_current_frame_image();
+
+			if( image ){
+				videoImage.src = image.src;
+				videoTexture.needsUpdate = true;
+			}
+
+			if( isMobile && deviceOrientation ){
+
+				var orientationQuat = new THREE.Quaternion();
+	 
+				var worldQuat = new THREE.Quaternion( - Math.sqrt( 0.5 ), 0, 0, Math.sqrt( 0.5 ) );
+	 
+				var euler = deviceOrientation.getScreenAdjustedEuler();
+	 
+				orientationQuat.setFromEuler( new THREE.Euler(
+					THREE.Math.degToRad( euler.beta  ),
+					THREE.Math.degToRad( euler.gamma ),
+					THREE.Math.degToRad( euler.alpha ),
+					'ZXY'
+				) );
+	 
+				cameras.user.quaternion.multiplyQuaternions( worldQuat, orientationQuat );
+
+			}
+
+			stereo.render( scene, camera );
+		
+		}
+
+		function resize(){
+
+			WIDTH  = window.innerWidth;
+			HEIGHT = window.innerHeight;
+
+			cameras.dev.aspect  = WIDTH / HEIGHT;
+			cameras.user.aspect = WIDTH / HEIGHT;
+			
+			cameras.dev.updateProjectionMatrix()
+			cameras.user.updateProjectionMatrix()
+	 
+			renderer.setSize( WIDTH, HEIGHT );
+			stereo.setSize( WIDTH, HEIGHT );
+		}
+
+		update();
+
+		window.addEventListener('resize', resize);
+
+
+	}
+
+</script>
+</body>
+</html>

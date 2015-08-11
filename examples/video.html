@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>BMW prototype</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<style type="text/css">
+		body {
+			overflow: hidden;
+			margin: 0;
+		}
+
+		#play{
+			top: 50%;
+			left: 50%;
+			position: absolute;
+			padding: 10px;
+		}
+	</style>
+</head>
+<body>
+
+<div id="sequence"></div>
+
+<button id="play">Play</button>
+
+<script type="text/javascript" src="bower_components/magipack/src/Magipack.js"></script>
+<script type="text/javascript" src="bower_components/gsap/src/minified/easing/EasePack.min.js"></script>
+<script type="text/javascript" src="bower_components/gsap/src/minified/TweenLite.min.js"></script>
+<script type="text/javascript" src="bower_components/dat-gui/build/dat.gui.min.js"></script>
+<script type="text/javascript" src="bower_components/howler.js/howler.min.js"></script>
+<script type="text/javascript" src="../build/vimage.js"></script>
+<script type="text/javascript">
+
+	var hasWebP = false;
+	var ext 	= 'jpg';
+
+	(function() {
+		var img = new Image();
+		img.onload = function() {
+			hasWebP = !!(img.height > 0 && img.width > 0);
+
+			ext = 'webp';
+
+			init();
+		};
+		img.onerror = function() {
+			hasWebP = false;
+
+			init();
+		};
+		img.src = 'test.webp';
+	})();
+
+	function init(){
+
+		var vimage = new Vimage({
+			element: 'sequence',
+			fullscreen: true
+		});
+
+		// Requires tweenlite
+
+		var playbackMode = new vimage.modes.PlaybackMode;
+
+		playbackMode.loop = true;
+
+		var gui = new dat.GUI();
+		gui.open();
+
+		gui.add(vimage.options, 'buffer_percent').listen();
+		gui.add(vimage.loader, 'packs_count').listen();
+		gui.add(vimage.loader, 'packs_total').listen();
+		gui.add(playbackMode, 'duration').listen();
+		gui.add(playbackMode, 'percent', 0, 1).listen();
+		gui.add(playbackMode, 'status').listen();
+
+		// Add sound with howler
+
+		var sound = new Howl({
+			urls: ['videos/redbull/audio.aac',
+				   'videos/redbull/audio.ogg',
+				   'videos/redbull/audio.mp3']
+		});
+
+		playbackMode.on('start', function(){
+			console.debug('start');
+			sound.stop();
+			sound.play();
+
+			play.style.display = 'none';
+		});
+
+		playbackMode.on('pause', function(){
+			console.debug('pause');
+			sound.pause();
+		});
+
+		playbackMode.on('resume', function(){
+			// sound.play();
+			console.debug('resume');
+		});
+
+		playbackMode.on('stop', function(){
+			console.debug('stop');
+			sound.stop();
+		});
+
+		vimage.set_mode( playbackMode );
+
+		var play = document.getElementById('play')
+
+		play.addEventListener('click', function(){
+			vimage.load('videos/redbull/hd/'+ ext +'/vimage.json');
+		});
+
+	}
+
+</script>
+</body>
+</html>

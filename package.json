@@ -1,0 +1,37 @@
+{
+  "name": "vimage",
+  "version": "1.0.0",
+  "description": "An image sequence streaming player for inline video on mobile devices.",
+  "main": "/build/vimage.min.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {
+     "happens": "^0.5.0"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.9.3",
+    "browser-sync": "^2.8.2",
+    "ecstatic": "^0.8.0",
+    "gulp": "^3.9.0",
+    "gulp-coffeeify": "^0.1.8",
+    "gulp-if": "^1.2.5",
+    "gulp-rename": "^1.2.2",
+    "gulp-streamify": "^1.0.0",
+    "gulp-uglify": "^1.2.0",
+    "shelljs": "^0.3.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hi-res/vimage.git"
+  },
+  "author": "David Paul Rosser",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hi-res/vimage/issues"
+  },
+  "homepage": "https://github.com/hi-res/vimage#readme"
+}

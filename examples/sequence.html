@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>BMW prototype</title>
+	<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+	<style type="text/css">
+		body {
+			overflow: hidden;
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+
+<div id="sequence"></div>
+
+<script type="text/javascript" src="bower_components/magipack/src/Magipack.js"></script>
+<script type="text/javascript" src="bower_components/gsap/src/minified/easing/EasePack.min.js"></script>
+<script type="text/javascript" src="bower_components/gsap/src/minified/TweenLite.min.js"></script>
+<script type="text/javascript" src="bower_components/dat-gui/build/dat.gui.min.js"></script>
+<script type="text/javascript" src="../build/vimage.js"></script>
+<script type="text/javascript">
+
+	var hasWebP = false;
+	var ext 	= 'jpg';
+
+	(function() {
+		var img = new Image();
+		img.onload = function() {
+			hasWebP = !!(img.height > 0 && img.width > 0);
+
+			ext = 'webp';
+
+			init();
+		};
+		img.onerror = function() {
+			hasWebP = false;
+
+			init();
+		};
+		img.src = 'test.webp';
+	})();
+
+	function init(){
+
+		var vimage = new Vimage({
+			element: 'sequence',
+			type: 'sequence',
+			fullscreen: true
+		});
+
+		var frameMode = new vimage.modes.FrameMode;
+
+		var gui = new dat.GUI();
+		gui.open();
+
+		gui.add(vimage.loader, 'packs_count').listen();
+		gui.add(vimage.loader, 'packs_total').listen();
+		gui.add(frameMode, 'percent', 0, 1).listen();
+
+		vimage.set_mode( frameMode );
+
+		vimage.once('loaded', function(){
+
+			function update( frame ){
+
+				frameMode.set_frame(frame);
+				vimage.player.update();
+			}
+
+			window.addEventListener('mousemove', function(event){
+
+				var frame = Math.round((event.pageX / window.innerWidth) * frameMode.total_frames);
+				
+				update(frame);
+			});
+
+			window.addEventListener('touchstart', function(event){
+
+				event.preventDefault();
+			});
+
+			window.addEventListener('touchmove', function(event){
+
+				console.log('event', event);
+
+				var frame = Math.round((event.touches[0].clientX / window.innerWidth) * frameMode.total_frames);
+				
+				update(frame);
+			});
+		
+
+			update(frameMode.total_frames-1);
+		});
+
+		vimage.load('videos/redbull/hd/'+ ext +'/vimage.json');
+	}
+
+</script>
+</body>
+</html>
