@@ -6,6 +6,7 @@ import json
 from optparse import OptionParser
 import struct
 import imghdr
+import math
 
 parser = OptionParser()
 
@@ -25,6 +26,8 @@ def listFiles(path):
 	num_files = len(files)
 	arr = []
 
+	count = 0
+
 	# fix for file order
 	for i in range(num_files):
 
@@ -34,8 +37,10 @@ def listFiles(path):
 
 			fileType = f.split('.')[1]
 
-			file_name = "%s.%s" % ((i + 1), fileType)
+			file_name = "%s.%s" % (count, fileType)
 			arr.append([path + file_name, file_name])
+
+			count += 1
 
 	return arr
 
@@ -68,7 +73,7 @@ def main(argv = None):
 
 	files       = listFiles(options.source)
 	num_files   = len(files)
-	total_packs = int(round(float(num_files) / float(options.imagesperpack)))
+	total_packs = int(math.ceil(float(num_files) / float(options.imagesperpack)))
 
 	packs       = [None] * total_packs
 	pack_index  = 0

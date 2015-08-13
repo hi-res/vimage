@@ -21,11 +21,11 @@ pack_images = ( dir, width, height ) ->
 
 	exec cmd, (code, output) ->
 
-		# echo 'Exit code:', code
-		# echo 'Program output:', output
+		echo 'Exit code:', code
+		echo 'Program output:', output
 
 		# Remove the tmp directory
-		rm '-rf', dir
+		# rm '-rf', dir
 
 # pack_images '_1439203061015_sd'
 # return
